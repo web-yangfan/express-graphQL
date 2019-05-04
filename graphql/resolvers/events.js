@@ -1,4 +1,6 @@
 const Event = require('../../models/events');
+const User = require('../../models/user');
+
 const { transformEvent  } = require('./merge');
 
 
@@ -14,13 +16,17 @@ module.exports = {
       throw err;
     }
   },
-  createEvent: async (args) => {
+  createEvent: async (args, req) => {
+    // 验证身份
+    if (!req.isAuth) {
+      throw new Error("未经身份验证");
+    }
     const event = new Event({
       title: args.eventInput.title,
       description: args.eventInput.description,
       price: +args.eventInput.price,
       date: new Date(args.eventInput.date),
-      creator: '5cc8dc902226ab1ff64b3ae5'
+      creator: req.userId
     });
 
     let createdEvent;
@@ -29,7 +35,7 @@ module.exports = {
       const result = await event.save();
       createdEvent = transformEvent(result);
       // 查询这个用户是否存在，并返回结果数据
-      const creator = await User.findById('5cc8dc902226ab1ff64b3ae5');
+      const creator = await User.findById(req.userId);
 
       // 用户不存在
       if (!creator) {

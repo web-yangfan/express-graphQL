@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const User = require('../../models/user');
+const jwt = require('jsonwebtoken');
 
 module.exports = {
   createUser: async (args) => {
@@ -21,5 +22,23 @@ module.exports = {
     } catch (err) {
       throw err;
     }
+  },
+  login: async ({ email, password }) => {
+    const user = await User.findOne({ email: email });
+    if (!user) {
+        throw new Error('用户不存在');
+    }
+    // 比较两个密码
+    const isEqual = await bcrypt.compare(password, user.password);
+    if (!isEqual) {
+      throw new Error('密码是不正确的');
+    }
+    // 生成token
+    const token = jwt.sign(
+      { userID: user.id, email:  user.email },
+      'somesupersecretkey',
+      { expiresIn: '1h' } // 设置有效期
+    );
+    return { userId: user.id, token: token, tokenExpiration: 1 }
   }
 };
