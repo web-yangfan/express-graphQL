@@ -35,7 +35,7 @@ module.exports = {
     }
     // 生成token
     const token = jwt.sign(
-      { userID: user.id, email:  user.email },
+      { userId: user.id, email:  user.email },
       'somesupersecretkey',
       { expiresIn: '1h' } // 设置有效期
     );
